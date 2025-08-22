@@ -2,49 +2,42 @@ import * as THREE from 'https://cdn.skypack.dev/three@0.150.1';
 import { GLTFLoader } from 'https://cdn.skypack.dev/three@0.150.1/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'https://cdn.skypack.dev/three@0.150.1/examples/jsm/controls/OrbitControls.js';
 
-// Scene setup
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xffffff); // white background
+scene.background = new THREE.Color(0xffffff);
 
-const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 1000);
 camera.position.set(0, 1.5, 4);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setSize(innerWidth, innerHeight);
 document.body.appendChild(renderer.domElement);
 
-// Orbit Controls
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 
-// Lighting
-const light = new THREE.DirectionalLight(0xffffff, 1);
-light.position.set(2, 4, 2);
-scene.add(light);
-
 scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+dirLight.position.set(2, 4, 2);
+scene.add(dirLight);
 
-// GLTF Loader
 const loader = new GLTFLoader();
 
-loader.load('test.glb', (gltf) => {
-  gltf.scene.position.set(-1, 0, 0); // Position model 1
+loader.load('test.glb', gltf => {
+  gltf.scene.position.set(-1, 0, 0);
   scene.add(gltf.scene);
-});
+}, undefined, console.error);
 
-loader.load('test2.glb', (gltf) => {
-  gltf.scene.position.set(1, 0, 0); // Position model 2
+loader.load('test2.glb', gltf => {
+  gltf.scene.position.set(1, 0, 0);
   scene.add(gltf.scene);
-});
+}, undefined, console.error);
 
-// Resize
 window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.aspect = innerWidth / innerHeight;
   camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setSize(innerWidth, innerHeight);
 });
 
-// Animate
 function animate() {
   requestAnimationFrame(animate);
   controls.update();
