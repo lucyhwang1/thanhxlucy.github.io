@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 const scene = new THREE.Scene();
@@ -20,15 +21,20 @@ document.body.appendChild(renderer.domElement);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-scene.add(ambientLight);
-
+scene.add(new THREE.AmbientLight(0xffffff, 0.5));
 const dirLight = new THREE.DirectionalLight(0xffffff, 1);
 dirLight.position.set(2, 4, 2);
 scene.add(dirLight);
 
-const loader = new GLTFLoader();
+// Setup Draco loader
+const dracoLoader = new DRACOLoader();
+dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/'); // Official Draco decoder CDN
 
+// Setup GLTF loader with Draco
+const loader = new GLTFLoader();
+loader.setDRACOLoader(dracoLoader);
+
+// Load test.glb (compressed)
 loader.load(
   'test.glb',
   (gltf) => {
@@ -41,6 +47,7 @@ loader.load(
   }
 );
 
+// Load test2.glb (not compressed)
 loader.load(
   'test2.glb',
   (gltf) => {
