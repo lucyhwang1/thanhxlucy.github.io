@@ -1,5 +1,6 @@
- import * as THREE from 'three';
-  import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xffffff);
@@ -65,4 +66,3 @@ function animate() {
 }
 
 animate();
-
