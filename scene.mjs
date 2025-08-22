@@ -10,6 +10,7 @@ import { BokehShader } from 'three/examples/jsm/shaders/BokehShader.js';
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xffffff);
 
+// Camera
 const camera = new THREE.PerspectiveCamera(
   60,
   window.innerWidth / window.innerHeight,
@@ -18,29 +19,31 @@ const camera = new THREE.PerspectiveCamera(
 );
 camera.position.set(0, 1.5, 4);
 
+// Renderer
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-// Controls
+// Orbit Controls
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 
-// Lighting
-scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-const dirLight = new THREE.DirectionalLight(0xffffff, 1);
-dirLight.position.set(2, 4, 2);
-scene.add(dirLight);
+// ✅ Ambient + Directional Light only (consistent for both models)
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.6); // Soft global light
+scene.add(ambientLight);
 
-// ✅ Setup DRACOLoader
+const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
+directionalLight.position.set(3, 5, 2);
+scene.add(directionalLight);
+
+// ✅ GLTFLoader with DRACOLoader support
 const dracoLoader = new DRACOLoader();
 dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/');
 
-// GLTF loader with Draco support
 const loader = new GLTFLoader();
 loader.setDRACOLoader(dracoLoader);
 
-// Load test.glb (with Draco compression)
+// Load test.glb (with built-in light possibly)
 loader.load(
   'test.glb',
   (gltf) => {
@@ -48,12 +51,10 @@ loader.load(
     scene.add(gltf.scene);
   },
   undefined,
-  (error) => {
-    console.error('Error loading test.glb:', error);
-  }
+  (err) => console.error('Error loading test.glb:', err)
 );
 
-// Load test2.glb (uncompressed or also Draco)
+// Load test2.glb (no internal lights)
 loader.load(
   'test2.glb',
   (gltf) => {
@@ -61,22 +62,20 @@ loader.load(
     scene.add(gltf.scene);
   },
   undefined,
-  (error) => {
-    console.error('Error loading test2.glb:', error);
-  }
+  (err) => console.error('Error loading test2.glb:', err)
 );
 
-// Depth of Field Effect (built-in)
+// Postprocessing with BokehShader (Depth of Field)
 const composer = new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene, camera));
 
 const bokehPass = new ShaderPass(BokehShader);
 bokehPass.uniforms['focus'].value = 1.0;
-bokehPass.uniforms['aperture'].value = 0.025;
-bokehPass.uniforms['maxblur'].value = 0.01;
+bokehPass.uniforms['aperture'].value = 0.02;
+bokehPass.uniforms['maxblur'].value = 0.005;
 composer.addPass(bokehPass);
 
-// Resize handling
+// Resize handler
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
@@ -84,11 +83,10 @@ window.addEventListener('resize', () => {
   composer.setSize(window.innerWidth, window.innerHeight);
 });
 
-// Animation loop
+// Animate
 function animate() {
   requestAnimationFrame(animate);
   controls.update();
   composer.render();
 }
-
 animate();
