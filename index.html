@@ -2,18 +2,19 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>3D Scene with Depth of Field</title>
+  <title>Three.js DOF (Builtin)</title>
   <style>
-    body, html { margin: 0; padding: 0; overflow: hidden; background: white; height: 100%; }
+    body, html {
+      margin: 0; padding: 0; overflow: hidden; background: white; height: 100%; width: 100%;
+    }
   </style>
   <script type="importmap">
-    {
-      "imports": {
-        "three": "https://unpkg.com/three@0.150.1/build/three.module.js",
-        "three/examples/jsm/": "https://unpkg.com/three@0.150.1/examples/jsm/"
-      }
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.150.1/build/three.module.js",
+      "three/examples/jsm/": "https://unpkg.com/three@0.150.1/examples/jsm/"
     }
+  }
   </script>
 </head>
 <body>
