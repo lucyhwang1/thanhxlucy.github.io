@@ -73,7 +73,7 @@ const bokehPass = new ShaderPass(BokehShader);
 bokehPass.uniforms['focus'].value = 1.0;
 bokehPass.uniforms['aperture'].value = 0.02;
 bokehPass.uniforms['maxblur'].value = 0.005;
-composer.addPass(bokehPass);
+// composer.addPass(bokehPass);
 
 // Resize handler
 window.addEventListener('resize', () => {
@@ -90,3 +90,4 @@ function animate() {
   composer.render();
 }
 animate();
+
