@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>3D Model Viewer</title>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      background-color: #000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      color: white;
+      font-family: sans-serif;
+    }
+    model-viewer {
+      width: 100%;
+      max-width: 800px;
+      height: 500px;
+    }
+  </style>
+</head>
+<body>
+  <h1>My 3D Model</h1>
+  <model-viewer
+    src="test.glb"
+    alt="A 3D model"
+    auto-rotate
+    camera-controls
+    shadow-intensity="1"
+    exposure="1"
+    ar
+    ar-modes="webxr scene-viewer quick-look"
+    environment-image="neutral">
+  </model-viewer>
+</body>
+</html>
