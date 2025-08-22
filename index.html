@@ -3,23 +3,27 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Three.js GLB Viewer</title>
+  <title>Three.js GLB Viewer with Import Maps</title>
   <style>
-    /* Make canvas full screen and remove margins */
+    /* Fullscreen canvas and white background */
     body, html {
-      margin: 0; padding: 0; overflow: hidden; background: white; height: 100%;
-      width: 100%;
+      margin: 0; padding: 0; overflow: hidden; background: white; height: 100%; width: 100%;
     }
   </style>
+
+  <!-- Import Map -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.150.1/build/three.module.js",
+      "three/examples/jsm/": "https://unpkg.com/three@0.150.1/examples/jsm/"
+    }
+  }
+  </script>
 </head>
 <body>
+
   <script type="module" src="scene.mjs"></script>
+
 </body>
 </html>
-
-<script type="importmap">
-{
-    "imports": {
-        "three": "https://unpkg.com/three/build/three.module.js"
-    }
-}</script>
