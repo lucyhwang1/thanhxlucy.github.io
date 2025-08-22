@@ -1,15 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Three.js Multi-GLB Scene</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Three.js GLB Viewer</title>
+
+  <!-- Import Map to resolve 'three' and its examples -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.skypack.dev/three@0.150.1",
+      "three/examples/jsm/": "https://cdn.skypack.dev/three@0.150.1/examples/jsm/"
+    }
+  }
+  </script>
+
   <style>
-    body { margin: 0; overflow: hidden; background: white; }
-    canvas { display: block; }
+    /* Make the canvas fill the entire viewport with white background */
+    body, html {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: white;
+      height: 100%;
+      width: 100%;
+    }
+    canvas {
+      display: block; /* remove scrollbars */
+    }
   </style>
 </head>
 <body>
   <script type="module" src="scene.mjs"></script>
 </body>
 </html>
-
