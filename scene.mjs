@@ -11,7 +11,7 @@ const scene = new THREE.Scene();
 
 // 🌫️ Soft mist haze with white background
 scene.background = new THREE.Color(0xffffff);
-scene.fog = new THREE.FogExp2(0xeeeeee, 0.025); // very light gray mist
+scene.fog = new THREE.FogExp2(0xeeeeee, 0.2); // very light gray mist
 
 // Camera
 const camera = new THREE.PerspectiveCamera(
@@ -36,10 +36,10 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 
 // 🌙 Brighter soft lighting setup
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
 scene.add(ambientLight);
 
-const hemiLight = new THREE.HemisphereLight(0xffffff, 0xcccccc, 0.8);
+const hemiLight = new THREE.HemisphereLight(0xffffff, 0xcccccc, 1.0);
 hemiLight.position.set(0, 20, 0);
 scene.add(hemiLight);
 
@@ -113,4 +113,5 @@ function animate() {
   composer.render();
 }
 animate();
+
 
