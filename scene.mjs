@@ -11,7 +11,7 @@ const scene = new THREE.Scene();
 
 // 🌫️ Soft mist haze with white background
 scene.background = new THREE.Color(0xffffff);
-scene.fog = new THREE.FogExp2(0xeeeeee, 0.005); // very light gray mist
+scene.fog = new THREE.FogExp2(0xeeeeee, 0.025); // very light gray mist
 
 // Camera
 const camera = new THREE.PerspectiveCamera(
@@ -113,3 +113,4 @@ function animate() {
   composer.render();
 }
 animate();
+
