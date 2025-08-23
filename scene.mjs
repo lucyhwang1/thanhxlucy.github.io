@@ -29,7 +29,7 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 
 // ✅ Ambient + Directional Light only (consistent for both models)
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.6); // Soft global light
+const ambientLight = new THREE.AmbientLight(0xffffff, 1); // Soft global light
 scene.add(ambientLight);
 
 const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
@@ -73,7 +73,7 @@ const bokehPass = new ShaderPass(BokehShader);
 bokehPass.uniforms['focus'].value = 1.0;
 bokehPass.uniforms['aperture'].value = 0.02;
 bokehPass.uniforms['maxblur'].value = 0.005;
-// composer.addPass(bokehPass);
+composer.addPass(bokehPass);
 
 // Resize handler
 window.addEventListener('resize', () => {
@@ -90,6 +90,7 @@ function animate() {
   composer.render();
 }
 animate();
+
 
 
 
