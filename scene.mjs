@@ -28,11 +28,11 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.15;   // smoother feel
 controls.zoomSpeed = 1.0;        // faster zoom like <model-viewer>
-controls.rotateSpeed = 0.4;
+controls.rotateSpeed = 0.6;
 controls.panSpeed = 0.6;
 controls.enableZoom = true;
 controls.enablePan = true;
-controls.minDistance = 0.5;      // optional zoom limits (remove if you want unlimited)
+// controls.minDistance = 0.5;      // optional zoom limits (remove if you want unlimited)
 controls.maxDistance = 50;
 
 controls.mouseButtons = {
@@ -139,3 +139,4 @@ function animate() {
 }
 
 animate();
+
