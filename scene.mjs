@@ -97,7 +97,7 @@ composer.addPass(bokehPass);
 // Bloom
 const bloomPass = new UnrealBloomPass(
   new THREE.Vector2(window.innerWidth, window.innerHeight),
-  1.0, 0.5, 0.9
+  0.5, 0.2, 0.5
 );
 composer.addPass(bloomPass);
 
@@ -150,4 +150,5 @@ function animate() {
 }
 
 animate();
+
 
