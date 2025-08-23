@@ -35,11 +35,11 @@ controls.enableDamping = true;
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.1);
 scene.add(ambientLight);
 
-const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
+const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1);
 hemiLight.position.set(0, 20, 0);
 scene.add(hemiLight);
 
-const dirLight = new THREE.DirectionalLight(0xffffff, 0.3);
+const dirLight = new THREE.DirectionalLight(0xffffff, 0.5);
 dirLight.position.set(5, 10, 5);
 dirLight.castShadow = true;
 scene.add(dirLight);
@@ -79,7 +79,7 @@ composer.addPass(new RenderPass(scene, camera));
 
 const bokehPass = new BokehPass(scene, camera, {
   focus: 1.0,
-  aperture: 0.025,   // tweak this
+  aperture: 0.015,   // tweak this
   maxblur: 0.01,     // tweak this
   width: window.innerWidth,
   height: window.innerHeight
@@ -101,3 +101,4 @@ function animate() {
   composer.render();
 }
 animate();
+
