@@ -24,9 +24,9 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 
 // Lights (less bright)
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
 scene.add(ambientLight);
-const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
 dirLight.position.set(5, 10, 7);
 scene.add(dirLight);
 
@@ -136,3 +136,4 @@ function animate() {
 }
 
 animate();
+
