@@ -9,9 +9,9 @@ import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass.js';
 // Scene
 const scene = new THREE.Scene();
 
-// 🌫️ Soft mist haze with white background
+// 🌫️ Linear fog with white background
 scene.background = new THREE.Color(0xffffff);
-scene.fog = new THREE.FogExp2(0xeeeeee, 0.2); // very light gray mist
+scene.fog = new THREE.Fog(0xffffff, 2, 15); // near, far control object fade
 
 // Camera
 const camera = new THREE.PerspectiveCamera(
@@ -34,6 +34,10 @@ document.body.appendChild(renderer.domElement);
 // Orbit Controls
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
+controls.minDistance = 0.5;   // allow zoom very close
+controls.maxDistance = 50;    // allow zoom very far
+controls.target.set(0, 0, 0);
+controls.update();
 
 // 🌙 Brighter soft lighting setup
 const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
@@ -90,9 +94,9 @@ const composer = new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene, camera));
 
 const bokehPass = new BokehPass(scene, camera, {
-  focus: 15.0,       // focus inside visible mist zone
-  aperture: 0.003,   // subtle blur
-  maxblur: 0.002,    // very soft
+  focus: 4.0,       // focus near red table
+  aperture: 0.003,  // subtle blur
+  maxblur: 0.002,   // very soft
   width: window.innerWidth,
   height: window.innerHeight
 });
@@ -113,5 +117,3 @@ function animate() {
   composer.render();
 }
 animate();
-
-
