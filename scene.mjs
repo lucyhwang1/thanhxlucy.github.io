@@ -12,7 +12,7 @@ import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPa
 // ----- Scene Setup -----
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xffffff);
-scene.fog = new THREE.FogExp2(0xffffff, 0.15); // stronger fog overall
+scene.fog = new THREE.FogExp2(0xffffff, 0.1); // stronger fog overall
 
 // ----- Camera -----
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -194,10 +194,10 @@ function updateEffects() {
   const distance = camera.position.length();
 
   // Fog: stronger baseline + increases slightly with distance
-  scene.fog.density = THREE.MathUtils.clamp(0.2 + distance * 0.002, 0.2, 0.3);
+  scene.fog.density = THREE.MathUtils.clamp(0.1 + distance * 0.002, 0.2, 0.3);
 
   // Bloom: softer up close, stronger with distance
-  bloomPass.strength = THREE.MathUtils.clamp(0.15 + distance * 0.02, 0.15, 0.7);
+  bloomPass.strength = THREE.MathUtils.clamp(0.05 + distance * 0.02, 0.15, 0.7);
 }
 
 // ----- Animation Loop -----
@@ -209,4 +209,5 @@ function animate() {
 }
 
 animate();
+
 
