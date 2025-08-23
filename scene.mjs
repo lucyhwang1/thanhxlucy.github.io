@@ -29,10 +29,10 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 
 // ✅ Ambient + Directional Light only (consistent for both models)
-const ambientLight = new THREE.AmbientLight(0xffffff, 1); // Soft global light
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.3); // Soft global light
 scene.add(ambientLight);
 
-const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0);
 directionalLight.position.set(3, 5, 2);
 scene.add(directionalLight);
 
@@ -90,6 +90,7 @@ function animate() {
   composer.render();
 }
 animate();
+
 
 
 
