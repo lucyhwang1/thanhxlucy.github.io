@@ -28,6 +28,14 @@ document.body.appendChild(renderer.domElement);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 
+const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.0);
+hemiLight.position.set(0, 20, 0);
+scene.add(hemiLight);
+
+const pointLight = new THREE.PointLight(0xffffff, 1);
+pointLight.position.set(2, 5, 3);
+scene.add(pointLight);
+
 // ✅ Ambient + Directional Light only (consistent for both models)
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.6); // Soft global light
 scene.add(ambientLight);
@@ -90,4 +98,5 @@ function animate() {
   composer.render();
 }
 animate();
+
 
