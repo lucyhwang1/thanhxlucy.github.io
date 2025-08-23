@@ -8,10 +8,8 @@ import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass.js';
 
 // Scene
 const scene = new THREE.Scene();
-
-// 🌫️ Linear fog with white background
 scene.background = new THREE.Color(0xffffff);
-scene.fog = new THREE.Fog(0xffffff, 2, 15); // near, far control object fade
+scene.fog = new THREE.Fog(0xffffff, 2, 15);
 
 // Camera
 const camera = new THREE.PerspectiveCamera(
@@ -31,15 +29,34 @@ renderer.toneMappingExposure = 1.0;
 renderer.setClearColor(scene.fog.color);
 document.body.appendChild(renderer.domElement);
 
-// Orbit Controls
+// Controls
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
-controls.minDistance = 0.5;   // allow zoom very close
-controls.maxDistance = 50;    // allow zoom very far
+controls.dampingFactor = 0.12;
+controls.zoomSpeed = 0.4;
+controls.rotateSpeed = 0.4;
+controls.enableZoom = true;
+controls.enablePan = false;
+controls.minDistance = 0.5;
+controls.maxDistance = 50;
 controls.target.set(0, 0, 0);
 controls.update();
 
-// 🌙 Brighter soft lighting setup
+// Auto-rotate after idle
+let idleTimer = Date.now();
+const autoRotateDelay = 3000; // 3 seconds
+
+controls.autoRotate = false; // Start off
+controls.autoRotateSpeed = 1.5;
+
+['pointerdown', 'wheel', 'keydown', 'touchstart'].forEach((eventName) => {
+  window.addEventListener(eventName, () => {
+    idleTimer = Date.now();
+    controls.autoRotate = false;
+  });
+});
+
+// Lighting
 const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
 scene.add(ambientLight);
 
@@ -55,12 +72,11 @@ dirLight.shadow.mapSize.height = 2048;
 dirLight.shadow.radius = 3;
 scene.add(dirLight);
 
-// Optional subtle fill light for extra depth
 const fillLight = new THREE.PointLight(0xffffff, 0.2, 50);
 fillLight.position.set(-10, 5, -10);
 scene.add(fillLight);
 
-// ✅ GLTFLoader with DRACOLoader
+// Loaders
 const dracoLoader = new DRACOLoader();
 dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/');
 
@@ -89,14 +105,14 @@ loader.load(
   (err) => console.error('Error loading test2.glb:', err)
 );
 
-// Postprocessing with BokehPass (soft DoF)
+// Post-processing
 const composer = new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene, camera));
 
 const bokehPass = new BokehPass(scene, camera, {
-  focus: 4.0,       // focus near red table
-  aperture: 0.003,  // subtle blur
-  maxblur: 0.002,   // very soft
+  focus: 4.0,
+  aperture: 0.003,
+  maxblur: 0.002,
   width: window.innerWidth,
   height: window.innerHeight
 });
@@ -113,7 +129,5 @@ window.addEventListener('resize', () => {
 // Animate
 function animate() {
   requestAnimationFrame(animate);
-  controls.update();
-  composer.render();
-}
-animate();
+
+  // Enable auto-rotate if idle long enough
