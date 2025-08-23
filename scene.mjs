@@ -23,16 +23,16 @@ renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.0;
 document.body.appendChild(renderer.domElement);
 
-// OrbitControls
+// OrbitControls setup
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
-controls.dampingFactor = 0.12;
-controls.zoomSpeed = 0.4;
+controls.dampingFactor = 0.15;   // smoother feel
+controls.zoomSpeed = 1.0;        // faster zoom like <model-viewer>
 controls.rotateSpeed = 0.4;
 controls.panSpeed = 0.6;
 controls.enableZoom = true;
 controls.enablePan = true;
-controls.minDistance = 0.5;
+controls.minDistance = 0.5;      // optional zoom limits (remove if you want unlimited)
 controls.maxDistance = 50;
 
 controls.mouseButtons = {
@@ -46,7 +46,7 @@ controls.touches = {
   TWO: THREE.TOUCH.DOLLY_PAN
 };
 
-// Shift + Left = pan
+// Shift + Left drag pans
 window.addEventListener('keydown', (e) => {
   if (e.key === 'Shift') {
     controls.mouseButtons.LEFT = THREE.MOUSE.PAN;
@@ -74,13 +74,10 @@ dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/');
 const loader = new GLTFLoader();
 loader.setDRACOLoader(dracoLoader);
 
-let modelToSpin = null;
-
 loader.load('test.glb', (gltf) => {
   const model1 = gltf.scene;
   model1.position.set(-1, 0, 0);
   scene.add(model1);
-  modelToSpin = model1;
 });
 
 loader.load('test2.glb', (gltf) => {
@@ -89,7 +86,7 @@ loader.load('test2.glb', (gltf) => {
   scene.add(model2);
 });
 
-// Bokeh effect
+// Postprocessing setup
 const composer = new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene, camera));
 const bokehPass = new BokehPass(scene, camera, {
@@ -101,53 +98,12 @@ const bokehPass = new BokehPass(scene, camera, {
 });
 composer.addPass(bokehPass);
 
-// Resize
+// Resize handler
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
   composer.setSize(window.innerWidth, window.innerHeight);
-});
-
-// Inertia on rotate (mouse + touch)
-let isDragging = false;
-let lastX = 0;
-let velocity = 0;
-const inertiaDecay = 0.94;
-
-function startDrag(x) {
-  isDragging = true;
-  lastX = x;
-  controls.enabled = false;
-}
-function updateDrag(x) {
-  const delta = x - lastX;
-  lastX = x;
-  velocity = delta * 0.005;
-}
-function endDrag() {
-  isDragging = false;
-  controls.enabled = true;
-}
-
-// Mouse events
-renderer.domElement.addEventListener('mousedown', (e) => {
-  if (e.button === 0 && !e.shiftKey) startDrag(e.clientX);
-});
-renderer.domElement.addEventListener('mousemove', (e) => {
-  if (isDragging) updateDrag(e.clientX);
-});
-renderer.domElement.addEventListener('mouseup', endDrag);
-
-// Touch events
-renderer.domElement.addEventListener('touchstart', (e) => {
-  if (e.touches.length === 1) startDrag(e.touches[0].clientX);
-});
-renderer.domElement.addEventListener('touchmove', (e) => {
-  if (isDragging && e.touches.length === 1) updateDrag(e.touches[0].clientX);
-});
-renderer.domElement.addEventListener('touchend', () => {
-  if (isDragging) endDrag();
 });
 
 // Optional: double-tap to reset
@@ -158,9 +114,11 @@ renderer.domElement.addEventListener('touchend', (e) => {
   lastTap = now;
 });
 
-// Auto-rotate after idle
+// Auto-rotate after idle (optional)
 let idleTimer = Date.now();
 const autoRotateDelay = 3000;
+controls.autoRotate = false;
+controls.autoRotateSpeed = 1.0;
 
 ['pointerdown', 'wheel', 'keydown', 'touchstart'].forEach((eventName) => {
   window.addEventListener(eventName, () => {
@@ -169,18 +127,11 @@ const autoRotateDelay = 3000;
   });
 });
 
-// Animate
 function animate() {
   requestAnimationFrame(animate);
 
   if (Date.now() - idleTimer > autoRotateDelay) {
     controls.autoRotate = true;
-  }
-
-  // Inertia rotation
-  if (!isDragging && modelToSpin && Math.abs(velocity) > 0.0001) {
-    modelToSpin.rotation.y += velocity;
-    velocity *= inertiaDecay;
   }
 
   controls.update();
