@@ -16,7 +16,7 @@ scene.fog = new THREE.FogExp2(0xffffff, 0.15); // stronger fog overall
 
 // ----- Camera -----
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(3, 6, 6);
+camera.position.set(4, 4, 4);
 
 // ----- Renderer -----
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -41,13 +41,13 @@ controls.autoRotate = false;
 controls.autoRotateSpeed = 0.8;
 
 // ----- Lighting -----
-scene.add(new THREE.AmbientLight(0xffffff, 1.0));
+scene.add(new THREE.AmbientLight(0xffffff, 0.5));
 
-const hemiLight = new THREE.HemisphereLight(0xffffff, 0xcccccc, 0.5);
+const hemiLight = new THREE.HemisphereLight(0xffffff, 0xcccccc, 0.3);
 hemiLight.position.set(0, 20, 0);
 scene.add(hemiLight);
 
-const dirLight = new THREE.DirectionalLight(0xffffff, 0.5);
+const dirLight = new THREE.DirectionalLight(0xffffff, 0.3);
 dirLight.position.set(5, 10, 5);
 scene.add(dirLight);
 
@@ -209,3 +209,4 @@ function animate() {
 }
 
 animate();
+
