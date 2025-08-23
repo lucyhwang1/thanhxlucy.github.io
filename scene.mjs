@@ -12,11 +12,11 @@ import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPa
 // ----- Scene Setup -----
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xffffff);
-scene.fog = new THREE.Fog(0xffffff, 2, 15);
+scene.fog = new THREE.FogExp2(0xffffff, 0.02); // exponential fog for smoother feel
 
 // ----- Camera -----
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(3, 6, 6); // start farther away
+camera.position.set(3, 6, 6); // start a bit away
 
 // ----- Renderer -----
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -97,7 +97,7 @@ composer.addPass(bokehPass);
 // Bloom
 const bloomPass = new UnrealBloomPass(
   new THREE.Vector2(window.innerWidth, window.innerHeight),
-  0.3, 0.1, 0.1
+  0.5, 0.3, 0.8
 );
 composer.addPass(bloomPass);
 
@@ -124,32 +124,97 @@ window.addEventListener('resize', () => {
   );
 });
 
-// ----- 10-second Camera Transition -----
-setTimeout(() => {
-  const startPos = camera.position.clone();
-  const endPos = new THREE.Vector3(5, 3, 5); // new viewpoint
-  const duration = 5000; // 5 seconds
-  let elapsed = 0;
+// ===== Idle Camera Transition =====
+let cameraAnimating = false;
+let cancelCameraAnimation = false;
+let idleTimeout;
 
-  function animateCamera(delta) {
-    elapsed += delta;
-    const t = Math.min(elapsed / duration, 1);
-    camera.position.lerpVectors(startPos, endPos, t);
-    camera.lookAt(0, 0, 0);
-    if (t < 1) requestAnimationFrame(() => animateCamera(delta));
+// Easing
+function easeInOutQuad(t) {
+  return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+}
+
+// Reset idle timer
+function resetIdleTimer() {
+  clearTimeout(idleTimeout);
+
+  if (cameraAnimating) {
+    cancelCameraAnimation = true;
+    cameraAnimating = false;
   }
 
-  animateCamera(16);
-}, 10000);
+  idleTimeout = setTimeout(startCameraTransition, 10000); // 10s idle
+}
+
+// Watch user interactions
+['mousemove', 'mousedown', 'wheel', 'keydown', 'touchstart'].forEach(evt =>
+  window.addEventListener(evt, resetIdleTimer)
+);
+
+// Camera transition
+function startCameraTransition() {
+  const startPos = camera.position.clone();
+
+  // Random position on sphere
+  const radius = 10;
+  const theta = Math.random() * Math.PI * 2;
+  const phi = Math.random() * (Math.PI / 3) + Math.PI / 6;
+
+  const endPos = new THREE.Vector3(
+    radius * Math.sin(phi) * Math.cos(theta),
+    radius * Math.cos(phi),
+    radius * Math.sin(phi) * Math.sin(theta)
+  );
+
+  const duration = 5000; // 5 sec
+  let startTime = null;
+
+  cameraAnimating = true;
+  cancelCameraAnimation = false;
+
+  function animateCamera(timestamp) {
+    if (!startTime) startTime = timestamp;
+    const elapsed = timestamp - startTime;
+    const linearT = Math.min(elapsed / duration, 1);
+    const t = easeInOutQuad(linearT);
+
+    if (!cancelCameraAnimation) {
+      camera.position.lerpVectors(startPos, endPos, t);
+      camera.lookAt(0, 0, 0);
+
+      if (linearT < 1) {
+        requestAnimationFrame(animateCamera);
+      } else {
+        cameraAnimating = false;
+        resetIdleTimer(); // restart idle cycle
+      }
+    }
+  }
+
+  requestAnimationFrame(animateCamera);
+}
+
+// Start idle timer
+resetIdleTimer();
+
+// ===== Dynamic Fog + Bloom =====
+function updateEffects() {
+  const distance = camera.position.length();
+
+  // Fog density (smooth scale)
+  const fogDensity = THREE.MathUtils.clamp(distance * 0.005, 0.01, 0.08);
+  scene.fog.density = fogDensity;
+
+  // Bloom strength (smooth scale)
+  const bloomStrength = THREE.MathUtils.clamp(distance * 0.05, 0.3, 1.2);
+  bloomPass.strength = bloomStrength;
+}
 
 // ----- Animation Loop -----
 function animate() {
   requestAnimationFrame(animate);
   controls.update();
+  updateEffects();
   composer.render();
 }
-
 animate();
-
-
-
