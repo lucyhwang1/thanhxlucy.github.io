@@ -24,7 +24,7 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.outputEncoding = THREE.sRGBEncoding;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.0;
+renderer.toneMappingExposure = 0.5;
 document.body.appendChild(renderer.domElement);
 
 // ----- Controls -----
@@ -41,13 +41,13 @@ controls.autoRotate = false;
 controls.autoRotateSpeed = 0.8;
 
 // ----- Lighting -----
-scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+scene.add(new THREE.AmbientLight(0xffffff, 1.0));
 
 const hemiLight = new THREE.HemisphereLight(0xffffff, 0xcccccc, 0.3);
 hemiLight.position.set(0, 20, 0);
 scene.add(hemiLight);
 
-const dirLight = new THREE.DirectionalLight(0xffffff, 0.3);
+const dirLight = new THREE.DirectionalLight(0xffffff, 0.5);
 dirLight.position.set(5, 10, 5);
 scene.add(dirLight);
 
@@ -209,5 +209,6 @@ function animate() {
 }
 
 animate();
+
 
 
