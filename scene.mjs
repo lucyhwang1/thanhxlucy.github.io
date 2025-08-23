@@ -12,7 +12,7 @@ import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPa
 // ----- Scene Setup -----
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xffffff);
-scene.fog = new THREE.FogExp2(0xffffff, 0.1); // denser even up close
+scene.fog = new THREE.FogExp2(0xffffff, 0.15); // stronger fog overall
 
 // ----- Camera -----
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -83,10 +83,8 @@ models.forEach((url, i) => {
 const composer = new EffectComposer(renderer);
 composer.setPixelRatio(window.devicePixelRatio);
 
-const renderPass = new RenderPass(scene, camera);
-composer.addPass(renderPass);
+composer.addPass(new RenderPass(scene, camera));
 
-// Soft Bokeh
 const bokehPass = new BokehPass(scene, camera, {
   focus: 4.0,
   aperture: 0.01,
@@ -96,14 +94,12 @@ const bokehPass = new BokehPass(scene, camera, {
 });
 composer.addPass(bokehPass);
 
-// Bloom
 const bloomPass = new UnrealBloomPass(
   new THREE.Vector2(window.innerWidth, window.innerHeight),
   0.3, 0.3, 0.5
 );
 composer.addPass(bloomPass);
 
-// FXAA
 const fxaaPass = new ShaderPass(FXAAShader);
 fxaaPass.material.uniforms['resolution'].value.set(
   1 / (window.innerWidth * window.devicePixelRatio),
@@ -115,10 +111,8 @@ composer.addPass(fxaaPass);
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
-
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(window.devicePixelRatio);
-
   composer.setSize(window.innerWidth, window.innerHeight);
   fxaaPass.material.uniforms['resolution'].value.set(
     1 / (window.innerWidth * window.devicePixelRatio),
@@ -126,18 +120,16 @@ window.addEventListener('resize', () => {
   );
 });
 
-// ===== Idle Camera Transition =====
+// ===== Idle Camera + Zoom Out =====
 let cameraAnimating = false;
 let cancelCameraAnimation = false;
 let idleTimeout;
 let autoRotateTimeout;
 
-// Easing
 function easeInOutQuad(t) {
   return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
 }
 
-// Reset idle timer
 function resetIdleTimer() {
   clearTimeout(idleTimeout);
   clearTimeout(autoRotateTimeout);
@@ -149,25 +141,24 @@ function resetIdleTimer() {
     cameraAnimating = false;
   }
 
+  // Enable auto-rotate after 3s idle
   autoRotateTimeout = setTimeout(() => {
     controls.autoRotate = true;
-  }, 3000); // 3s idle → autorotate
+  }, 3000);
 
-  idleTimeout = setTimeout(startCameraZoomOut, 10000); // 10s idle → zoom out
+  // Zoom out every 10s idle
+  idleTimeout = setTimeout(startCameraZoomOut, 10000);
 }
 
-// Watch user interactions
 ['mousemove', 'mousedown', 'wheel', 'keydown', 'touchstart'].forEach(evt =>
   window.addEventListener(evt, resetIdleTimer)
 );
 
-// Camera zoom out transition
 function startCameraZoomOut() {
   const startPos = camera.position.clone();
   const dir = startPos.clone().normalize();
-  const endPos = startPos.clone().add(dir.multiplyScalar(3)); // zoom out 3 units further
-
-  const duration = 4000; // 4 sec
+  const endPos = startPos.clone().add(dir.multiplyScalar(3)); // zoom out 3 units
+  const duration = 4000;
   let startTime = null;
 
   cameraAnimating = true;
@@ -187,7 +178,7 @@ function startCameraZoomOut() {
         requestAnimationFrame(animateCamera);
       } else {
         cameraAnimating = false;
-        resetIdleTimer(); // chain another idle cycle
+        resetIdleTimer();
       }
     }
   }
@@ -195,23 +186,18 @@ function startCameraZoomOut() {
   requestAnimationFrame(animateCamera);
 }
 
-// Start idle timer
+// Start idle timers
 resetIdleTimer();
 
 // ===== Dynamic Fog + Bloom =====
 function updateEffects() {
   const distance = camera.position.length();
 
-  function updateEffectsBasedOnDistance() {
-  const distance = camera.position.length();
+  // Fog: stronger baseline + increases slightly with distance
+  scene.fog.density = THREE.MathUtils.clamp(0.2 + distance * 0.002, 0.2, 0.3);
 
-  // Fog density: strong baseline + slightly increases with distance
-  const fogDensity = THREE.MathUtils.clamp(0.15 + distance * 0.003, 0.15, 0.25);
-  scene.fog.density = fogDensity;
-
-  // Bloom: softer up close, stronger when farther away
-  const bloomStrength = THREE.MathUtils.clamp(0.15 + distance * 0.02, 0.15, 0.7);
-  bloomPass.strength = bloomStrength;
+  // Bloom: softer up close, stronger with distance
+  bloomPass.strength = THREE.MathUtils.clamp(0.15 + distance * 0.02, 0.15, 0.7);
 }
 
 // ----- Animation Loop -----
@@ -221,6 +207,5 @@ function animate() {
   updateEffects();
   composer.render();
 }
+
 animate();
-
-
