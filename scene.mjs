@@ -35,7 +35,7 @@ controls.enableDamping = true;
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.1);
 scene.add(ambientLight);
 
-const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1);
+const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.0);
 hemiLight.position.set(0, 20, 0);
 scene.add(hemiLight);
 
@@ -101,4 +101,5 @@ function animate() {
   composer.render();
 }
 animate();
+
 
