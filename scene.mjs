@@ -202,12 +202,15 @@ resetIdleTimer();
 function updateEffects() {
   const distance = camera.position.length();
 
-   // Fog density (keep a decent amount up close, grow with distance too)
-  const fogDensity = THREE.MathUtils.clamp(0.05 + distance * 0.002, 0.05, 0.1);
+  function updateEffectsBasedOnDistance() {
+  const distance = camera.position.length();
+
+  // Fog density: strong baseline + slightly increases with distance
+  const fogDensity = THREE.MathUtils.clamp(0.15 + distance * 0.003, 0.15, 0.25);
   scene.fog.density = fogDensity;
 
-  // Bloom strength (weaker up close, stronger when farther away)
-  const bloomStrength = THREE.MathUtils.clamp(0.2 + distance * 0.02, 0.2, 1.0);
+  // Bloom: softer up close, stronger when farther away
+  const bloomStrength = THREE.MathUtils.clamp(0.15 + distance * 0.02, 0.15, 0.7);
   bloomPass.strength = bloomStrength;
 }
 
@@ -219,4 +222,5 @@ function animate() {
   composer.render();
 }
 animate();
+
 
