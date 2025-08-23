@@ -131,3 +131,11 @@ function animate() {
   requestAnimationFrame(animate);
 
   // Enable auto-rotate if idle long enough
+  if (Date.now() - idleTimer > autoRotateDelay) {
+    controls.autoRotate = true;
+  }
+
+  controls.update();
+  composer.render();
+}
+animate();
