@@ -28,22 +28,21 @@ document.body.appendChild(renderer.domElement);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 
-// ✅ Ambient + Directional Light only (consistent for both models)
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.1); // Soft global light
+// 🌙 Simple, soft lighting setup
+
+// Very soft base light
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.1);
 scene.add(ambientLight);
 
+// Skylight (soft global, sky vs ground)
 const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
 hemiLight.position.set(0, 20, 0);
 scene.add(hemiLight);
 
-// Optional: gentle sun light for a bit of shading
+// Gentle sunlight for shading
 const dirLight = new THREE.DirectionalLight(0xffffff, 0.3);
 dirLight.position.set(5, 10, 5);
 scene.add(dirLight);
-
-const directionalLight = new THREE.DirectionalLight(0xffffff, 0);
-directionalLight.position.set(3, 5, 2);
-scene.add(directionalLight);
 
 // ✅ GLTFLoader with DRACOLoader support
 const dracoLoader = new DRACOLoader();
@@ -99,6 +98,7 @@ function animate() {
   composer.render();
 }
 animate();
+
 
 
 
