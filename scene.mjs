@@ -8,7 +8,6 @@ import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
-import { RectAreaLightUniformsLib, RectAreaLight } from 'three/examples/jsm/lights/RectAreaLight.js';
 
 // ----- Scene Setup -----
 const scene = new THREE.Scene();
@@ -17,8 +16,7 @@ scene.fog = new THREE.Fog(0xffffff, 2, 15);
 
 // ----- Camera -----
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-// START FARTHER AWAY
-camera.position.set(3, 6, 9);
+camera.position.set(3, 6, 9); // start farther away
 
 // ----- Renderer -----
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -50,13 +48,6 @@ scene.add(hemiLight);
 const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
 dirLight.position.set(5, 10, 5);
 scene.add(dirLight);
-
-// Rectangular Light
-RectAreaLightUniformsLib.init();
-const rectLight = new RectAreaLight(0xffffff, 5, 10, 10);
-rectLight.position.set(0, 10, 0);
-rectLight.lookAt(0, 0, 0);
-scene.add(rectLight);
 
 // ----- Load Models -----
 const dracoLoader = new DRACOLoader();
@@ -148,7 +139,7 @@ setTimeout(() => {
     if (t < 1) requestAnimationFrame(() => animateCamera(delta));
   }
 
-  animateCamera(16); // approx 60fps delta
+  animateCamera(16);
 }, 10000);
 
 // ----- Animation Loop -----
