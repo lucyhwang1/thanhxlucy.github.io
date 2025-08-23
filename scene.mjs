@@ -9,9 +9,9 @@ import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass.js';
 // Scene
 const scene = new THREE.Scene();
 
-// 🌫️ Soft mist fog
-scene.fog = new THREE.FogExp2(0x222233, 0.01);
-scene.background = scene.fog.color;
+// 🌫️ Soft mist haze with white background
+scene.background = new THREE.Color(0xffffff);
+scene.fog = new THREE.FogExp2(0xeeeeee, 0.005); // very light gray mist
 
 // Camera
 const camera = new THREE.PerspectiveCamera(
@@ -35,24 +35,24 @@ document.body.appendChild(renderer.domElement);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 
-// 🌙 Soft lighting setup
-const ambientLight = new THREE.AmbientLight(0x8888aa, 0.3); // cool ambient
+// 🌙 Brighter soft lighting setup
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
 scene.add(ambientLight);
 
-const hemiLight = new THREE.HemisphereLight(0xaaaaee, 0x444444, 0.6);
+const hemiLight = new THREE.HemisphereLight(0xffffff, 0xcccccc, 0.8);
 hemiLight.position.set(0, 20, 0);
 scene.add(hemiLight);
 
-const dirLight = new THREE.DirectionalLight(0xccccff, 0.4);
+const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
 dirLight.position.set(5, 10, 5);
 dirLight.castShadow = true;
 dirLight.shadow.mapSize.width = 2048;
 dirLight.shadow.mapSize.height = 2048;
-dirLight.shadow.radius = 4;
+dirLight.shadow.radius = 3;
 scene.add(dirLight);
 
-// Optional subtle fill light
-const fillLight = new THREE.PointLight(0x666688, 0.2, 50);
+// Optional subtle fill light for extra depth
+const fillLight = new THREE.PointLight(0xffffff, 0.2, 50);
 fillLight.position.set(-10, 5, -10);
 scene.add(fillLight);
 
@@ -63,6 +63,7 @@ dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/');
 const loader = new GLTFLoader();
 loader.setDRACOLoader(dracoLoader);
 
+// Load test.glb
 loader.load(
   'test.glb',
   (gltf) => {
@@ -73,6 +74,7 @@ loader.load(
   (err) => console.error('Error loading test.glb:', err)
 );
 
+// Load test2.glb
 loader.load(
   'test2.glb',
   (gltf) => {
@@ -83,14 +85,14 @@ loader.load(
   (err) => console.error('Error loading test2.glb:', err)
 );
 
-// Postprocessing with BokehPass
+// Postprocessing with BokehPass (soft DoF)
 const composer = new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene, camera));
 
 const bokehPass = new BokehPass(scene, camera, {
-  focus: 15.0,
-  aperture: 0.004,   // subtle blur
-  maxblur: 0.003,    // very soft
+  focus: 15.0,       // focus inside visible mist zone
+  aperture: 0.003,   // subtle blur
+  maxblur: 0.002,    // very soft
   width: window.innerWidth,
   height: window.innerHeight
 });
