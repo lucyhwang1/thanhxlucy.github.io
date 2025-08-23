@@ -41,11 +41,11 @@ controls.maxDistance = 50;
 // ----- Lighting -----
 scene.add(new THREE.AmbientLight(0xffffff, 1.0));
 
-const hemiLight = new THREE.HemisphereLight(0xffffff, 0xcccccc, 1.0);
+const hemiLight = new THREE.HemisphereLight(0xffffff, 0xcccccc, 0.5);
 hemiLight.position.set(0, 20, 0);
 scene.add(hemiLight);
 
-const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
+const dirLight = new THREE.DirectionalLight(0xffffff, 0.5);
 dirLight.position.set(5, 10, 5);
 scene.add(dirLight);
 
@@ -97,7 +97,7 @@ composer.addPass(bokehPass);
 // Bloom
 const bloomPass = new UnrealBloomPass(
   new THREE.Vector2(window.innerWidth, window.innerHeight),
-  0.5, 0.3, 0.8
+  0.3, 0.3, 0.5
 );
 composer.addPass(bloomPass);
 
@@ -218,3 +218,4 @@ function animate() {
   composer.render();
 }
 animate();
+
