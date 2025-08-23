@@ -4,9 +4,9 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
-import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
-import { BokehShader } from 'three/examples/jsm/shaders/BokehShader.js';
+import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass.js';
 
+// Scene
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xffffff);
 
@@ -22,36 +22,36 @@ camera.position.set(0, 1.5, 4);
 // Renderer
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.outputEncoding = THREE.sRGBEncoding; // proper color space
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.0;
 document.body.appendChild(renderer.domElement);
 
 // Orbit Controls
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 
-// 🌙 Simple, soft lighting setup
-
-// Very soft base light
+// 🌙 Soft lighting setup
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.1);
 scene.add(ambientLight);
 
-// Skylight (soft global, sky vs ground)
 const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
 hemiLight.position.set(0, 20, 0);
 scene.add(hemiLight);
 
-// Gentle sunlight for shading
 const dirLight = new THREE.DirectionalLight(0xffffff, 0.3);
 dirLight.position.set(5, 10, 5);
+dirLight.castShadow = true;
 scene.add(dirLight);
 
-// ✅ GLTFLoader with DRACOLoader support
+// ✅ GLTFLoader with DRACOLoader
 const dracoLoader = new DRACOLoader();
 dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/');
 
 const loader = new GLTFLoader();
 loader.setDRACOLoader(dracoLoader);
 
-// Load test.glb (with built-in light possibly)
+// Load test.glb (with internal light maybe)
 loader.load(
   'test.glb',
   (gltf) => {
@@ -73,14 +73,17 @@ loader.load(
   (err) => console.error('Error loading test2.glb:', err)
 );
 
-// Postprocessing with BokehShader (Depth of Field)
+// Postprocessing with BokehPass (Depth of Field)
 const composer = new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene, camera));
 
-const bokehPass = new ShaderPass(BokehShader);
-bokehPass.uniforms['focus'].value = 1.0;
-bokehPass.uniforms['aperture'].value = 0.02;
-bokehPass.uniforms['maxblur'].value = 0.005;
+const bokehPass = new BokehPass(scene, camera, {
+  focus: 1.0,
+  aperture: 0.025,   // tweak this
+  maxblur: 0.01,     // tweak this
+  width: window.innerWidth,
+  height: window.innerHeight
+});
 composer.addPass(bokehPass);
 
 // Resize handler
@@ -98,10 +101,3 @@ function animate() {
   composer.render();
 }
 animate();
-
-
-
-
-
-
-
