@@ -5,34 +5,36 @@ import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass.js';
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
+import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader.js';
 
-// Scene setup
+// ----- Scene Setup -----
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xffffff);
 scene.fog = new THREE.Fog(0xffffff, 2, 15);
 
-// Camera
+// ----- Camera -----
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.position.set(0, 1.5, 4);
 
-// Renderer
+// ----- Renderer -----
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(window.devicePixelRatio);
 renderer.outputEncoding = THREE.sRGBEncoding;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.0;
 document.body.appendChild(renderer.domElement);
 
-// OrbitControls setup
+// ----- OrbitControls -----
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
-controls.dampingFactor = 0.15;   // smoother feel
-controls.zoomSpeed = 1.0;        // faster zoom like <model-viewer>
+controls.dampingFactor = 0.15;
+controls.zoomSpeed = 1.0;
 controls.rotateSpeed = 0.6;
 controls.panSpeed = 0.6;
 controls.enableZoom = true;
 controls.enablePan = true;
-// controls.minDistance = 0.5;      // optional zoom limits (remove if you want unlimited)
 controls.maxDistance = 50;
 
 controls.mouseButtons = {
@@ -40,7 +42,6 @@ controls.mouseButtons = {
   MIDDLE: THREE.MOUSE.PAN,
   RIGHT: THREE.MOUSE.PAN
 };
-
 controls.touches = {
   ONE: THREE.TOUCH.ROTATE,
   TWO: THREE.TOUCH.DOLLY_PAN
@@ -48,15 +49,13 @@ controls.touches = {
 
 // Shift + Left drag pans
 window.addEventListener('keydown', (e) => {
-  if (e.key === 'Shift') {
-    controls.mouseButtons.LEFT = THREE.MOUSE.PAN;
-  }
+  if (e.key === 'Shift') controls.mouseButtons.LEFT = THREE.MOUSE.PAN;
 });
 window.addEventListener('keyup', (e) => {
   controls.mouseButtons.LEFT = THREE.MOUSE.ROTATE;
 });
 
-// Lighting
+// ----- Lighting -----
 scene.add(new THREE.AmbientLight(0xffffff, 1.0));
 const hemiLight = new THREE.HemisphereLight(0xffffff, 0xcccccc, 1.0);
 hemiLight.position.set(0, 20, 0);
@@ -68,7 +67,7 @@ const fillLight = new THREE.PointLight(0xffffff, 0.2, 50);
 fillLight.position.set(-10, 5, -10);
 scene.add(fillLight);
 
-// GLTF loading
+// ----- GLTF Loader -----
 const dracoLoader = new DRACOLoader();
 dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/');
 const loader = new GLTFLoader();
@@ -86,9 +85,14 @@ loader.load('test2.glb', (gltf) => {
   scene.add(model2);
 });
 
-// Postprocessing setup
+// ----- Postprocessing -----
 const composer = new EffectComposer(renderer);
-composer.addPass(new RenderPass(scene, camera));
+composer.setPixelRatio(window.devicePixelRatio);
+
+const renderPass = new RenderPass(scene, camera);
+composer.addPass(renderPass);
+
+// BokehPass (keep soft blur)
 const bokehPass = new BokehPass(scene, camera, {
   focus: 4.0,
   aperture: 0.003,
@@ -98,15 +102,30 @@ const bokehPass = new BokehPass(scene, camera, {
 });
 composer.addPass(bokehPass);
 
-// Resize handler
+// FXAA Pass for smooth edges
+const fxaaPass = new ShaderPass(FXAAShader);
+fxaaPass.material.uniforms['resolution'].value.set(
+  1 / (window.innerWidth * window.devicePixelRatio),
+  1 / (window.innerHeight * window.devicePixelRatio)
+);
+composer.addPass(fxaaPass);
+
+// ----- Resize Handler -----
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
+
   renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(window.devicePixelRatio);
+
   composer.setSize(window.innerWidth, window.innerHeight);
+  fxaaPass.material.uniforms['resolution'].value.set(
+    1 / (window.innerWidth * window.devicePixelRatio),
+    1 / (window.innerHeight * window.devicePixelRatio)
+  );
 });
 
-// Optional: double-tap to reset
+// ----- Double-tap Reset -----
 let lastTap = 0;
 renderer.domElement.addEventListener('touchend', (e) => {
   const now = Date.now();
@@ -114,7 +133,7 @@ renderer.domElement.addEventListener('touchend', (e) => {
   lastTap = now;
 });
 
-// Auto-rotate after idle (optional)
+// ----- Auto-Rotate After Idle -----
 let idleTimer = Date.now();
 const autoRotateDelay = 3000;
 controls.autoRotate = false;
@@ -127,6 +146,7 @@ controls.autoRotateSpeed = 1.0;
   });
 });
 
+// ----- Animate Loop -----
 function animate() {
   requestAnimationFrame(animate);
 
@@ -139,4 +159,3 @@ function animate() {
 }
 
 animate();
-
