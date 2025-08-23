@@ -7,6 +7,8 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader.js';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+import { RectAreaLightUniformsLib, RectAreaLight } from 'three/examples/jsm/lights/RectAreaLight.js';
 
 // ----- Scene Setup -----
 const scene = new THREE.Scene();
@@ -15,7 +17,8 @@ scene.fog = new THREE.Fog(0xffffff, 2, 15);
 
 // ----- Camera -----
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(0, 1.5, 4);
+// START FARTHER AWAY
+camera.position.set(3, 6, 9);
 
 // ----- Renderer -----
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -26,7 +29,7 @@ renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.0;
 document.body.appendChild(renderer.domElement);
 
-// ----- OrbitControls -----
+// ----- Controls -----
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.15;
@@ -37,52 +40,50 @@ controls.enableZoom = true;
 controls.enablePan = true;
 controls.maxDistance = 50;
 
-controls.mouseButtons = {
-  LEFT: THREE.MOUSE.ROTATE,
-  MIDDLE: THREE.MOUSE.PAN,
-  RIGHT: THREE.MOUSE.PAN
-};
-controls.touches = {
-  ONE: THREE.TOUCH.ROTATE,
-  TWO: THREE.TOUCH.DOLLY_PAN
-};
-
-// Shift + Left drag pans
-window.addEventListener('keydown', (e) => {
-  if (e.key === 'Shift') controls.mouseButtons.LEFT = THREE.MOUSE.PAN;
-});
-window.addEventListener('keyup', (e) => {
-  controls.mouseButtons.LEFT = THREE.MOUSE.ROTATE;
-});
-
 // ----- Lighting -----
 scene.add(new THREE.AmbientLight(0xffffff, 1.0));
+
 const hemiLight = new THREE.HemisphereLight(0xffffff, 0xcccccc, 1.0);
 hemiLight.position.set(0, 20, 0);
 scene.add(hemiLight);
+
 const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
 dirLight.position.set(5, 10, 5);
 scene.add(dirLight);
-const fillLight = new THREE.PointLight(0xffffff, 0.2, 50);
-fillLight.position.set(-10, 5, -10);
-scene.add(fillLight);
 
-// ----- GLTF Loader -----
+// Rectangular Light
+RectAreaLightUniformsLib.init();
+const rectLight = new RectAreaLight(0xffffff, 5, 10, 10);
+rectLight.position.set(0, 10, 0);
+rectLight.lookAt(0, 0, 0);
+scene.add(rectLight);
+
+// ----- Load Models -----
 const dracoLoader = new DRACOLoader();
 dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/');
 const loader = new GLTFLoader();
 loader.setDRACOLoader(dracoLoader);
 
-loader.load('test.glb', (gltf) => {
-  const model1 = gltf.scene;
-  model1.position.set(-1, 0, 0);
-  scene.add(model1);
-});
+const models = ['test.glb', 'test2.glb'];
+models.forEach((url, i) => {
+  loader.load(url, (gltf) => {
+    const model = gltf.scene;
+    model.position.x = i === 0 ? -1 : 1;
+    scene.add(model);
 
-loader.load('test2.glb', (gltf) => {
-  const model2 = gltf.scene;
-  model2.position.set(1, 0, 0);
-  scene.add(model2);
+    // Create ground plane below first model
+    if (i === 0) {
+      const box = new THREE.Box3().setFromObject(model);
+      const minY = box.min.y;
+      const ground = new THREE.Mesh(
+        new THREE.PlaneGeometry(50, 50),
+        new THREE.MeshStandardMaterial({ color: 0xaaaaaa })
+      );
+      ground.rotation.x = -Math.PI / 2;
+      ground.position.y = minY - 0.01;
+      scene.add(ground);
+    }
+  });
 });
 
 // ----- Postprocessing -----
@@ -92,7 +93,7 @@ composer.setPixelRatio(window.devicePixelRatio);
 const renderPass = new RenderPass(scene, camera);
 composer.addPass(renderPass);
 
-// BokehPass (keep soft blur)
+// Soft Bokeh
 const bokehPass = new BokehPass(scene, camera, {
   focus: 4.0,
   aperture: 0.003,
@@ -102,7 +103,14 @@ const bokehPass = new BokehPass(scene, camera, {
 });
 composer.addPass(bokehPass);
 
-// FXAA Pass for smooth edges
+// Bloom
+const bloomPass = new UnrealBloomPass(
+  new THREE.Vector2(window.innerWidth, window.innerHeight),
+  1.2, 0.4, 0.85
+);
+composer.addPass(bloomPass);
+
+// FXAA
 const fxaaPass = new ShaderPass(FXAAShader);
 fxaaPass.material.uniforms['resolution'].value.set(
   1 / (window.innerWidth * window.devicePixelRatio),
@@ -110,7 +118,7 @@ fxaaPass.material.uniforms['resolution'].value.set(
 );
 composer.addPass(fxaaPass);
 
-// ----- Resize Handler -----
+// ----- Resize -----
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
@@ -125,35 +133,27 @@ window.addEventListener('resize', () => {
   );
 });
 
-// ----- Double-tap Reset -----
-let lastTap = 0;
-renderer.domElement.addEventListener('touchend', (e) => {
-  const now = Date.now();
-  if (now - lastTap < 300) controls.reset();
-  lastTap = now;
-});
+// ----- 10-second Camera Transition -----
+setTimeout(() => {
+  const startPos = camera.position.clone();
+  const endPos = new THREE.Vector3(5, 3, 5); // new viewpoint
+  const duration = 5000; // 5 seconds
+  let elapsed = 0;
 
-// ----- Auto-Rotate After Idle -----
-let idleTimer = Date.now();
-const autoRotateDelay = 3000;
-controls.autoRotate = false;
-controls.autoRotateSpeed = 1.0;
-
-['pointerdown', 'wheel', 'keydown', 'touchstart'].forEach((eventName) => {
-  window.addEventListener(eventName, () => {
-    idleTimer = Date.now();
-    controls.autoRotate = false;
-  });
-});
-
-// ----- Animate Loop -----
-function animate() {
-  requestAnimationFrame(animate);
-
-  if (Date.now() - idleTimer > autoRotateDelay) {
-    controls.autoRotate = true;
+  function animateCamera(delta) {
+    elapsed += delta;
+    const t = Math.min(elapsed / duration, 1);
+    camera.position.lerpVectors(startPos, endPos, t);
+    camera.lookAt(0, 0, 0);
+    if (t < 1) requestAnimationFrame(() => animateCamera(delta));
   }
 
+  animateCamera(16); // approx 60fps delta
+}, 10000);
+
+// ----- Animation Loop -----
+function animate() {
+  requestAnimationFrame(animate);
   controls.update();
   composer.render();
 }
