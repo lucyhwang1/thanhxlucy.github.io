@@ -8,7 +8,10 @@ import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass.js';
 
 // Scene
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xffffff);
+
+// 🌫️ Soft mist fog
+scene.fog = new THREE.FogExp2(0x222233, 0.01);
+scene.background = scene.fog.color;
 
 // Camera
 const camera = new THREE.PerspectiveCamera(
@@ -22,9 +25,10 @@ camera.position.set(0, 1.5, 4);
 // Renderer
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.outputEncoding = THREE.sRGBEncoding; // proper color space
+renderer.outputEncoding = THREE.sRGBEncoding;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.0;
+renderer.setClearColor(scene.fog.color);
 document.body.appendChild(renderer.domElement);
 
 // Orbit Controls
@@ -32,17 +36,25 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 
 // 🌙 Soft lighting setup
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.1);
+const ambientLight = new THREE.AmbientLight(0x8888aa, 0.3); // cool ambient
 scene.add(ambientLight);
 
-const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.0);
+const hemiLight = new THREE.HemisphereLight(0xaaaaee, 0x444444, 0.6);
 hemiLight.position.set(0, 20, 0);
 scene.add(hemiLight);
 
-const dirLight = new THREE.DirectionalLight(0xffffff, 0.5);
+const dirLight = new THREE.DirectionalLight(0xccccff, 0.4);
 dirLight.position.set(5, 10, 5);
 dirLight.castShadow = true;
+dirLight.shadow.mapSize.width = 2048;
+dirLight.shadow.mapSize.height = 2048;
+dirLight.shadow.radius = 4;
 scene.add(dirLight);
+
+// Optional subtle fill light
+const fillLight = new THREE.PointLight(0x666688, 0.2, 50);
+fillLight.position.set(-10, 5, -10);
+scene.add(fillLight);
 
 // ✅ GLTFLoader with DRACOLoader
 const dracoLoader = new DRACOLoader();
@@ -51,7 +63,6 @@ dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/');
 const loader = new GLTFLoader();
 loader.setDRACOLoader(dracoLoader);
 
-// Load test.glb (with internal light maybe)
 loader.load(
   'test.glb',
   (gltf) => {
@@ -62,7 +73,6 @@ loader.load(
   (err) => console.error('Error loading test.glb:', err)
 );
 
-// Load test2.glb (no internal lights)
 loader.load(
   'test2.glb',
   (gltf) => {
@@ -73,14 +83,14 @@ loader.load(
   (err) => console.error('Error loading test2.glb:', err)
 );
 
-// Postprocessing with BokehPass (Depth of Field)
+// Postprocessing with BokehPass
 const composer = new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene, camera));
 
 const bokehPass = new BokehPass(scene, camera, {
-  focus: 1.0,
-  aperture: 0.015,   // tweak this
-  maxblur: 0.01,     // tweak this
+  focus: 15.0,
+  aperture: 0.004,   // subtle blur
+  maxblur: 0.003,    // very soft
   width: window.innerWidth,
   height: window.innerHeight
 });
@@ -101,5 +111,3 @@ function animate() {
   composer.render();
 }
 animate();
-
-
