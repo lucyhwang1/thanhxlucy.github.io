@@ -16,7 +16,7 @@ scene.fog = new THREE.Fog(0xffffff, 2, 15);
 
 // ----- Camera -----
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(3, 6, 9); // start farther away
+camera.position.set(3, 6, 6); // start farther away
 
 // ----- Renderer -----
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -87,8 +87,8 @@ composer.addPass(renderPass);
 // Soft Bokeh
 const bokehPass = new BokehPass(scene, camera, {
   focus: 4.0,
-  aperture: 0.003,
-  maxblur: 0.002,
+  aperture: 0.01,
+  maxblur: 0.01,
   width: window.innerWidth,
   height: window.innerHeight
 });
@@ -97,7 +97,7 @@ composer.addPass(bokehPass);
 // Bloom
 const bloomPass = new UnrealBloomPass(
   new THREE.Vector2(window.innerWidth, window.innerHeight),
-  1.2, 0.4, 0.85
+  1.0, 0.5, 0.9
 );
 composer.addPass(bloomPass);
 
@@ -150,3 +150,4 @@ function animate() {
 }
 
 animate();
+
