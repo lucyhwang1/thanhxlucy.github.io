@@ -57,7 +57,7 @@ dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/');
 const loader = new GLTFLoader();
 loader.setDRACOLoader(dracoLoader);
 
-const models = ['test.glb', 'test2.glb'];
+const models = ['test.glb', 'test2.glb', 'lucytest.glb'];
 models.forEach((url, i) => {
   loader.load(url, (gltf) => {
     const model = gltf.scene;
@@ -209,6 +209,7 @@ function animate() {
 }
 
 animate();
+
 
 
 
